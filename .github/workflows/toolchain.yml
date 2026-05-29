@@ -1,0 +1,30 @@
+name: Build HelenOS amd64 cross-compiler
+
+on:
+  workflow_dispatch:
+
+jobs:
+  toolchain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texinfo flex bison libgmp-dev libmpfr-dev libmpc-dev
+
+      - name: Build amd64 cross-compiler
+        run: |
+          JOBS=2 tools/toolchain.sh amd64
+
+      - name: Package toolchain
+        run: |
+          tar czf amd64-helenos-cross.tar.gz -C ~/.local/share/HelenOS cross/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: amd64-helenos-cross
+          path: amd64-helenos-cross.tar.gz
+          retention-days: 30
